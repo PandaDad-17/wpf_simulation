@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\$(Platform)\$(Configuration)\SimulationCore.dll"
+          Condition="'$(Platform)' != 'AnyCPU' And '$(Platform)' != 'x86' And Exists('..\$(Platform)\$(Configuration)\SimulationCore.dll')">
+      <Link>SimulationCore.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+
+    <None Include="..\Win32\$(Configuration)\SimulationCore.dll"
+          Condition="('$(Platform)' == 'x86' Or '$(Platform)' == 'AnyCPU') And Exists('..\Win32\$(Configuration)\SimulationCore.dll')">
+      <Link>SimulationCore.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+
+    <None Include="..\x64\$(Configuration)\SimulationCore.dll"
+          Condition="'$(Platform)' == 'AnyCPU' And !Exists('..\Win32\$(Configuration)\SimulationCore.dll') And Exists('..\x64\$(Configuration)\SimulationCore.dll')">
+      <Link>SimulationCore.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

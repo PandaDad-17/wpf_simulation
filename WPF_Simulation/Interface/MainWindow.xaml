@@ -1,0 +1,96 @@
+﻿<Window x:Class="Interface.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Interface"
+        mc:Ignorable="d"
+        Title="WPF Simulation"
+        Height="720" Width="1280"
+        Background="#F3F3F3"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*" MinWidth="400"/>
+            <ColumnDefinition Width="1*" MinWidth="320" MaxWidth="450"/>
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#1E1E1E" Margin="10" CornerRadius="4">
+            <Grid>
+                <TextBlock Text="[ 3D Rendering Viewport Space ]" 
+                           Foreground="#757575" 
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center" 
+                           FontSize="18" FontStyle="Italic"/>
+
+                <Border Background="#99000000" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="8">
+                    <TextBlock Text="{Binding PerformanceMetrics}" 
+                               Foreground="#00FF00" 
+                               FontFamily="Consolas" 
+                               FontSize="12"/>
+                </Border>
+            </Grid>
+        </Border>
+
+        <Border Grid.Column="1" Background="White" Margin="0,10,10,10" CornerRadius="4" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0" Margin="0,0,0,25">
+                    <TextBlock Text="Simulation Parameters" FontSize="20" FontWeight="Bold" Foreground="#333333"/>
+                    <TextBlock Text="Interop Engine Controls" FontSize="11" Foreground="#777777" Margin="0,2,0,0"/>
+                    <Separator Margin="0,10,0,0" Background="#E0E0E0"/>
+                </StackPanel>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+
+                        <StackPanel Margin="0,0,0,20" ToolTip="Adjusts the time differential delta engine steps multiplier.">
+                            <Grid Margin="0,0,0,5">
+                                <TextBlock Text="Simulation Speed TimeScale" FontWeight="SemiBold" Foreground="#444444" HorizontalAlignment="Left"/>
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding ElementName=SliderTimeScale, Path=Value, StringFormat={}{0:F2}}" FontWeight="Bold" Foreground="#005A9C"/>
+                                    <TextBlock Text="x" Foreground="#777777" Margin="2,0,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <Slider x:Name="SliderTimeScale" 
+                                    Minimum="0.5" Maximum="2.0" 
+                                    Value="{Binding TimeScale, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                    TickFrequency="0.1" IsSnapToTickEnabled="True"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,20" ToolTip="Controls the number of calculated physical spheres inside the box matrix boundary.">
+                            <Grid Margin="0,0,0,5">
+                                <TextBlock Text="Active Sphere Count" FontWeight="SemiBold" Foreground="#444444" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{Binding ElementName=SliderSpheres, Path=Value, StringFormat={}{0:0}}" FontWeight="Bold" Foreground="#005A9C" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Slider x:Name="SliderSpheres" 
+                                    Minimum="10" Maximum="500" 
+                                    Value="{Binding SphereCount, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                    TickFrequency="10" IsSnapToTickEnabled="True"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,20" ToolTip="Alters the bounding mesh physics calculations limits for all processed items.">
+                            <Grid Margin="0,0,0,5">
+                                <TextBlock Text="Sphere Collision Radius" FontWeight="SemiBold" Foreground="#444444" HorizontalAlignment="Left"/>
+                                <TextBlock Text="{Binding ElementName=SliderRadius, Path=Value, StringFormat={}{0:F2}}" FontWeight="Bold" Foreground="#005A9C" HorizontalAlignment="Right"/>
+                            </Grid>
+                            <Slider x:Name="SliderRadius" 
+                                    Minimum="0.1" Maximum="1.5" 
+                                    Value="{Binding SphereRadius, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                    TickFrequency="0.05" IsSnapToTickEnabled="True"/>
+                        </StackPanel>
+
+                    </StackPanel>
+                </ScrollViewer>
+
+                <TextBlock Grid.Row="2" Text="Architecture Prototype v1.0" 
+                           FontSize="10" Foreground="#CCCCCC" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

@@ -1,3 +1,7 @@
+# ==========================================
+# C++
+# ==========================================
+
 # Prerequisites
 *.d
 
@@ -30,3 +34,73 @@
 *.exe
 *.out
 *.app
+
+# ==========================================
+# Visual Studio & MSBuild Artifacts
+# ==========================================
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+ARM64/
+Win32/
+bin/
+obj/
+
+# ==========================================
+# C++ / MSVC Generated Objects
+# ==========================================
+*.aps
+*.idb
+*.ilk
+*.pbd
+*.pdb
+*.suo
+*.user
+*.vshost.exe
+*.vshost.exe.manifest
+*.ncb
+*.sdf
+*.opensdf
+*.db
+*.opendb
+*.tlog
+*.log
+*.recipe
+*.iobj
+*.ipdb
+*.obj
+*.lib
+*.dll
+*.exp
+
+# ==========================================
+# .NET / C# Specific Artifacts
+# ==========================================
+*.userprefs
+*.csproj.user
+*.vcxproj.user
+*.sqlproj.user
+.plastic/
+*.contentproj
+*.sass-cache/
+
+# ==========================================
+# JetBrains / VS Code (If used on the side)
+# ==========================================
+.idea/
+.vscode/
+
+# ==========================================
+# EXCLUSIONS (Keep these source files!)
+# ==========================================
+!*.slnx
+!*.sln
+!*.csproj
+!*.vcxproj
+!*.filters
+!*.h
+!*.cpp
+!*.cs
+!*.xaml

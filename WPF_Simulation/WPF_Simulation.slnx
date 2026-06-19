@@ -1,0 +1,11 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="Interface/Interface.csproj">
+    <BuildDependency Project="SimulationCore/SimulationCore.vcxproj" />
+  </Project>
+  <Project Path="SimulationCore/SimulationCore.vcxproj" Id="a26f20f3-3035-4305-8b3f-029c552602da" />
+</Solution>
