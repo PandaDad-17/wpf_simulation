@@ -4,7 +4,7 @@
 
 #include "../Shared/SimulationTypes.h"
 
-#ifdef NATIVECORE_EXPORTS
+#ifdef SIMULATIONCORE_EXPORTS
     #define NATIVE_API __declspec(dllexport)
 #else
     #define NATIVE_API __declspec(dllimport)
