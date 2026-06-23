@@ -29,6 +29,8 @@
                                 <DirectionalLight Color="#FFFFFF" Direction="-1,-1,-1" />
 
                                 <Model3DGroup x:Name="SpheresGroup" />
+
+                                <Model3DGroup x:Name="ContainerBoxGroup" />
                             </Model3DGroup>
                         </ModelVisual3D.Content>
                     </ModelVisual3D>
