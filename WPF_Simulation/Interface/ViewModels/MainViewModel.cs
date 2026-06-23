@@ -21,7 +21,7 @@ namespace Interface.ViewModels
         private int _sphereCount = 50;
         private float _sphereRadius = 0.5f;
         private float _timeScale = 1.0f;
-        private string _performanceMetrics = "FPS: 0 | Frame Time: 0.00 ms";
+        private string _performanceMetrics = "FPS: 0 | Step Time: 0.00 ms | Nodes: 0";
 
         public MainViewModel()
         {
@@ -151,7 +151,7 @@ namespace Interface.ViewModels
 
                 float frameTimeMs = averageDeltaTime * 1000.0f;
                 float fps = averageDeltaTime > 0 ? 1.0f / averageDeltaTime : 0;
-                PerformanceMetrics = $"FPS: {fps:F0} | Native Step Latency: {frameTimeMs:F2} ms | Tracked Nodes: {activeSpheres}";
+                PerformanceMetrics = $"FPS: {fps:F0} | Step Time: {frameTimeMs:F2} ms | Nodes: {activeSpheres}";
             }
         }
 
