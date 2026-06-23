@@ -9,12 +9,18 @@ PhysicsEngine::PhysicsEngine()
     : m_spheres(nullptr)
     , m_current_sphere_count(0)
 {
-    m_config = { 0, 0.0f, 1.0f, 0.0f };
+    m_config = { 
+        .max_spheres = 0,
+        .sphere_radius = 0.0f,
+        .time_scale = 1.0f,
+        .box_side_length = 0.0f
+    };
 }
 
 PhysicsEngine::~PhysicsEngine()
 {
-    if (m_spheres) {
+    if (m_spheres)
+    {
         delete[] m_spheres;
         m_spheres = nullptr;
     }
@@ -23,7 +29,8 @@ PhysicsEngine::~PhysicsEngine()
 void PhysicsEngine::Initialize(const SimulationConfig& config)
 {
     // Clean up existing buffer if size changes or re-initializing
-    if (m_spheres) {
+    if (m_spheres)
+    {
         delete[] m_spheres;
         m_spheres = nullptr;
     }
@@ -39,7 +46,8 @@ void PhysicsEngine::Initialize(const SimulationConfig& config)
 
     float half_box = m_config.box_side_length / 2.0f;
 
-    for (int32_t i = 0; i < m_current_sphere_count; ++i) {
+    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    {
         m_spheres[i].id = i;
         m_spheres[i].radius = m_config.sphere_radius;
 
@@ -59,29 +67,30 @@ void PhysicsEngine::Initialize(const SimulationConfig& config)
 void PhysicsEngine::UpdateConfig(const SimulationConfig& config)
 {
     // If runtime settings change sphere limits, re-initialize cleanly
-    if (config.max_spheres != m_config.max_spheres) {
+    if (config.max_spheres != m_config.max_spheres)
         Initialize(config);
-    }
-    else {
+    else
+    {
         // Update live parameters on the fly
         m_config.time_scale = config.time_scale;
         m_config.box_side_length = config.box_side_length;
 
-        for (int32_t i = 0; i < m_current_sphere_count; ++i) {
+        for (int32_t i = 0; i < m_current_sphere_count; ++i)
             m_spheres[i].radius = config.sphere_radius;
-        }
     }
 }
 
 void PhysicsEngine::Step(float delta_time)
 {
-    if (!m_spheres || m_current_sphere_count <= 0) return;
+    if (!m_spheres || (m_current_sphere_count <= 0))
+        return;
 
     // Apply time scaling multiplier (0.5x - 2.0x)
     float dt = delta_time * m_config.time_scale;
 
     // Phase 1: Integrate positions
-    for (int32_t i = 0; i < m_current_sphere_count; ++i) {
+    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    {
         m_spheres[i].position.x += m_spheres[i].velocity.x * dt;
         m_spheres[i].position.y += m_spheres[i].velocity.y * dt;
         m_spheres[i].position.z += m_spheres[i].velocity.z * dt;
@@ -94,37 +103,43 @@ void PhysicsEngine::Step(float delta_time)
 
 void PhysicsEngine::ApplyBoundaryConstraints()
 {
-    float half_box = m_config.box_side_length / 2.0f;
-
-    for (int32_t i = 0; i < m_current_sphere_count; ++i) {
+    float half_box = m_config.box_side_length * 0.5f;
+    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    {
         SphereData& s = m_spheres[i];
 
         // X-axis check
-        if (s.position.x - s.radius < -half_box) {
+        if ((s.position.x - s.radius) < -half_box)
+        {
             s.position.x = -half_box + s.radius;
             s.velocity.x *= -1.0f;
         }
-        else if (s.position.x + s.radius > half_box) {
+        else if ((s.position.x + s.radius) > half_box)
+        {
             s.position.x = half_box - s.radius;
             s.velocity.x *= -1.0f;
         }
 
         // Y-axis check
-        if (s.position.y - s.radius < -half_box) {
+        if ((s.position.y - s.radius) < -half_box)
+        {
             s.position.y = -half_box + s.radius;
             s.velocity.y *= -1.0f;
         }
-        else if (s.position.y + s.radius > half_box) {
+        else if ((s.position.y + s.radius) > half_box)
+        {
             s.position.y = half_box - s.radius;
             s.velocity.y *= -1.0f;
         }
 
         // Z-axis check
-        if (s.position.z - s.radius < -half_box) {
+        if ((s.position.z - s.radius) < -half_box)
+        {
             s.position.z = -half_box + s.radius;
             s.velocity.z *= -1.0f;
         }
-        else if (s.position.z + s.radius > half_box) {
+        else if ((s.position.z + s.radius) > half_box)
+        {
             s.position.z = half_box - s.radius;
             s.velocity.z *= -1.0f;
         }
@@ -134,8 +149,10 @@ void PhysicsEngine::ApplyBoundaryConstraints()
 void PhysicsEngine::ResolveCollisions()
 {
     // O(N^2) naive check—perfect for showcasing baseline performance optimization constraints
-    for (int32_t i = 0; i < m_current_sphere_count; ++i) {
-        for (int32_t j = i + 1; j < m_current_sphere_count; ++j) {
+    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    {
+        for (int32_t j = i + 1; j < m_current_sphere_count; ++j)
+        {
             SphereData& s1 = m_spheres[i];
             SphereData& s2 = m_spheres[j];
 
@@ -143,14 +160,17 @@ void PhysicsEngine::ResolveCollisions()
             float dy = s2.position.y - s1.position.y;
             float dz = s2.position.z - s1.position.z;
 
-            float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+            float distance = std::sqrt((dx * dx) + (dy * dy) + (dz * dz));
             float min_distance = s1.radius + s2.radius;
 
-            if (distance < min_distance && distance > 0.0f) {
+            if ((distance < min_distance) && (distance > 0.0f))
+            {
+				float inverse_distance = 1.0f / distance;
+
                 // Normal vector of contact
-                float nx = dx / distance;
-                float ny = dy / distance;
-                float nz = dz / distance;
+                float nx = dx * inverse_distance;
+                float ny = dy * inverse_distance;
+                float nz = dz * inverse_distance;
 
                 // Push apart along contact normal to prevent overlap sticking
                 float overlap = min_distance - distance;
@@ -171,7 +191,8 @@ void PhysicsEngine::ResolveCollisions()
                 float vel_along_normal = rvx * nx + rvy * ny + rvz * nz;
 
                 // Do not resolve if velocities are already separating
-                if (vel_along_normal < 0) {
+                if (vel_along_normal < 0)
+                {
                     // Elastic impulse constant (1.0 = perfect elastic bounce)
                     float restitution = 1.0f;
                     float impulse_scalar = -(1.0f + restitution) * vel_along_normal;
@@ -191,52 +212,48 @@ void PhysicsEngine::ResolveCollisions()
     }
 }
 
-int32_t PhysicsEngine::GetActiveSphereData(SphereData* out_buffer, int32_t buffer_capacity)
-{
-    if (!m_spheres || buffer_capacity < m_current_sphere_count) return 0;
-    std::memcpy(out_buffer, m_spheres, sizeof(SphereData) * m_current_sphere_count);
-    return m_current_sphere_count;
-}
-
-
 // ============================================================================
 // EXPORTED C-LINKAGE WRAPPER CODES
 // ============================================================================
 
-extern "C" {
+extern "C"
+{
 
-    NATIVE_API PhysicsEngine* CreateEngine() {
+    NATIVE_API PhysicsEngine* CreateEngine()
+    {
         return new PhysicsEngine();
     }
 
-    NATIVE_API void DestroyEngine(PhysicsEngine* instance) {
-        if (instance) {
+    NATIVE_API void DestroyEngine(PhysicsEngine* instance)
+    {
+        if (instance)
             delete instance;
-        }
     }
 
-    NATIVE_API void InitializeEngine(PhysicsEngine* instance, SimulationConfig config) {
-        if (instance) {
+    NATIVE_API void InitializeEngine(PhysicsEngine* instance, SimulationConfig config)
+    {
+        if (instance)
             instance->Initialize(config);
-        }
     }
 
-    NATIVE_API void UpdateEngineConfig(PhysicsEngine* instance, SimulationConfig config) {
-        if (instance) {
+    NATIVE_API void UpdateEngineConfig(PhysicsEngine* instance, SimulationConfig config)
+    {
+        if (instance)
             instance->UpdateConfig(config);
-        }
     }
 
-    NATIVE_API void StepSimulation(PhysicsEngine* instance, float delta_time) {
-        if (instance) {
+    NATIVE_API void StepSimulation(PhysicsEngine* instance, float delta_time)
+    {
+        if (instance)
             instance->Step(delta_time);
-        }
     }
 
-    NATIVE_API int32_t GetSimulationState(PhysicsEngine* instance, SphereData** out_buffer_ptr) {
-        if (instance && out_buffer_ptr) {
-            // CRITICAL ZERO-COPY: Expose raw underlying pointer address directly to C#
-            return instance->GetActiveSphereData(nullptr, 0); // Modifying strategy slightly for cleaner data pointer pull:
+    NATIVE_API int32_t GetSimulationState(PhysicsEngine* instance, SphereData** out_buffer_ptr)
+    {
+        if (instance && out_buffer_ptr)
+        {
+            *out_buffer_ptr = instance->GetSpheresBuffer();
+            return instance->GetSphereCount();
         }
         return 0;
     }

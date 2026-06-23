@@ -4,16 +4,16 @@ using System.Numerics;
 
 namespace Interface.Models
 {
-    // Sequential layout forces the CLI runtime to layout bytes identically to C++ struct alignas(16)
-    [StructLayout(LayoutKind.Sequential, Pack = 16)]
+    [StructLayout(LayoutKind.Explicit, Size = 48)]
     public struct SphereData
     {
-        public int Id;
-        public float Radius;
-        public Vector3 Position; // System.Numerics.Vector3 is native blittable float x,y,z
-        private float Padding;   // Matches the 16-byte alignment padding from C++
-        public Vector3 Velocity;
-        private float Padding2;
+        [FieldOffset(0)] public int Id;
+        [FieldOffset(4)] public float Radius;
+
+        // Offset 8-15 is the alignment padding from C++ struct layout
+
+        [FieldOffset(16)] public Vector3 Position;  // Matches C++ alignas(16) boundary
+        [FieldOffset(32)] public Vector3 Velocity;  // Matches second Vector3D alignment
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -44,7 +44,6 @@ namespace Interface.Models
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern void StepSimulation(IntPtr instance, float deltaTime);
 
-        // This is our zero-copy powerhouse. We pass a pointer to a pointer.
         [DllImport(DllName, CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetSimulationState(IntPtr instance, out SphereData* outBufferPtr);
     }

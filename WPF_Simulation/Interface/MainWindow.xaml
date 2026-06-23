@@ -17,17 +17,28 @@
 
         <Border Grid.Column="0" Background="#1E1E1E" Margin="10" CornerRadius="4">
             <Grid>
-                <TextBlock Text="[ 3D Rendering Viewport Space ]" 
-                           Foreground="#757575" 
-                           HorizontalAlignment="Center" 
-                           VerticalAlignment="Center" 
-                           FontSize="18" FontStyle="Italic"/>
+                <Viewport3D x:Name="MainViewport">
+                    <Viewport3D.Camera>
+                        <PerspectiveCamera Position="0, 15, 35" LookDirection="0, -15, -35" UpDirection="0, 1, 0" FieldOfView="60" />
+                    </Viewport3D.Camera>
 
-                <Border Background="#99000000" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="8">
+                    <ModelVisual3D x:Name="SceneContainer">
+                        <ModelVisual3D.Content>
+                            <Model3DGroup>
+                                <AmbientLight Color="#444444" />
+                                <DirectionalLight Color="#FFFFFF" Direction="-1,-1,-1" />
+
+                                <Model3DGroup x:Name="SpheresGroup" />
+                            </Model3DGroup>
+                        </ModelVisual3D.Content>
+                    </ModelVisual3D>
+                </Viewport3D>
+
+                <Border Background="#99000000" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Padding="8" IsHitTestVisible="False">
                     <TextBlock Text="{Binding PerformanceMetrics}" 
-                               Foreground="#00FF00" 
-                               FontFamily="Consolas" 
-                               FontSize="12"/>
+                       Foreground="#00FF00" 
+                       FontFamily="Consolas" 
+                       FontSize="12"/>
                 </Border>
             </Grid>
         </Border>

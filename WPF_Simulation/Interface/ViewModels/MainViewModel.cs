@@ -7,6 +7,9 @@ namespace Interface.ViewModels
 {
     public class MainViewModel : ViewModelBase, IDisposable
     {
+        public unsafe delegate void FrameUpdatedHandler(Models.SphereData* nativeBuffer, int count);
+        public event FrameUpdatedHandler? OnFrameUpdated;
+
         private IntPtr _enginePtr;
         private Stopwatch _stopwatch;
         private double _lastElapsedTime;
@@ -76,7 +79,8 @@ namespace Interface.ViewModels
 
         private void UpdateEngineConfiguration()
         {
-            if (_enginePtr == IntPtr.Zero) return;
+            if (_enginePtr == IntPtr.Zero)
+                return;
 
             var config = new SimulationConfig
             {
@@ -94,7 +98,8 @@ namespace Interface.ViewModels
         /// </summary>
         private unsafe void OnRenderFrame(object? sender, EventArgs e)
         {
-            if (_enginePtr == IntPtr.Zero) return;
+            if (_enginePtr == IntPtr.Zero)
+                return;
 
             // Calculate precise delta time elapsed since last frame
             double currentTime = _stopwatch.Elapsed.TotalSeconds;
@@ -102,7 +107,8 @@ namespace Interface.ViewModels
             _lastElapsedTime = currentTime;
 
             // Guard against massive frame drops spikes (e.g. window moving dragging pauses)
-            if (deltaTime > 0.1f) deltaTime = 0.1f;
+            if (deltaTime > 0.1f)
+                deltaTime = 0.1f;
 
             // Step 1: Advance the C++ physics computations
             NativeMethods.StepSimulation(_enginePtr, deltaTime);
@@ -113,6 +119,8 @@ namespace Interface.ViewModels
 
             if (activeSpheres > 0 && nativeBuffer != null)
             {
+                OnFrameUpdated?.Invoke(nativeBuffer, activeSpheres);
+
                 // Unsafe Raw Pointer Loop Execution Showcase:
                 // We parse structural components instantly across borders without .NET allocating memory loops
                 for (int i = 0; i < activeSpheres; i++)

@@ -17,9 +17,10 @@ public:
     void Initialize(const SimulationConfig& config);
     void Step(float delta_time);
 
-    // Copy out performance data to a pre-allocated pointer safely
-    int32_t GetActiveSphereData(SphereData* out_buffer, int32_t buffer_capacity);
     void UpdateConfig(const SimulationConfig& config);
+
+    int32_t GetSphereCount() const { return m_current_sphere_count; }
+    SphereData* GetSpheresBuffer() { return m_spheres; }
 
 private:
     SimulationConfig m_config;

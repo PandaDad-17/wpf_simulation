@@ -3,7 +3,8 @@
 #include <cstdint>
 
 // Explicitly aligned 3D Vector matching C# System.Numerics.Vector3
-struct alignas(16) Vector3D {
+struct alignas(16) Vector3D
+{
     float x;
     float y;
     float z;
@@ -11,7 +12,8 @@ struct alignas(16) Vector3D {
 };
 
 // The core layout of a single sphere's render data
-struct SphereData {
+struct SphereData
+{
     int32_t id;
     float radius;
     Vector3D position;
@@ -19,7 +21,8 @@ struct SphereData {
 };
 
 // Configuration payload passed from WPF to C++
-struct SimulationConfig {
+struct SimulationConfig
+{
     int32_t max_spheres;
     float sphere_radius;
     float time_scale; // 0.5x to 2.0x
