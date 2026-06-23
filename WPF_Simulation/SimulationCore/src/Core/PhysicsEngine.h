@@ -1,31 +1,31 @@
 #pragma once
 
+#include <vector>
+
 #include "../Shared/SimulationTypes.h"
 
 #ifdef NATIVECORE_EXPORTS
-#define NATIVE_API __declspec(dllexport)
+    #define NATIVE_API __declspec(dllexport)
 #else
-#define NATIVE_API __declspec(dllimport)
+    #define NATIVE_API __declspec(dllimport)
 #endif
 
 // Thread-safe, object-oriented C++ implementation hidden from C#
 class PhysicsEngine {
 public:
     PhysicsEngine();
-    ~PhysicsEngine();
 
     void Initialize(const SimulationConfig& config);
     void Step(float delta_time);
 
     void UpdateConfig(const SimulationConfig& config);
 
-    int32_t GetSphereCount() const { return m_current_sphere_count; }
-    SphereData* GetSpheresBuffer() { return m_spheres; }
+    int32_t GetSphereCount() const { return static_cast<int32_t>(m_spheres.size()); }
+    SphereData* GetSpheresBuffer() { return m_spheres.data(); }
 
 private:
     SimulationConfig m_config;
-    SphereData* m_spheres;
-    int32_t m_current_sphere_count;
+    std::vector<SphereData> m_spheres;
 
     void ResolveCollisions();
     void ApplyBoundaryConstraints();

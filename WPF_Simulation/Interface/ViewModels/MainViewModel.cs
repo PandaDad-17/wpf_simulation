@@ -13,6 +13,8 @@ namespace Interface.ViewModels
         private IntPtr _enginePtr;
         private Stopwatch _stopwatch;
         private double _lastElapsedTime;
+        private readonly float[] _frameTimeWindow = new float[10];
+        private int _frameWindowIndex = 0;
         private bool _isDisposed;
 
         // UI Properties back-stores
@@ -110,6 +112,9 @@ namespace Interface.ViewModels
             if (deltaTime > 0.1f)
                 deltaTime = 0.1f;
 
+            _frameTimeWindow[_frameWindowIndex] = deltaTime;
+            _frameWindowIndex = (_frameWindowIndex + 1) % _frameTimeWindow.Length;
+
             // Step 1: Advance the C++ physics computations
             NativeMethods.StepSimulation(_enginePtr, deltaTime);
 
@@ -136,9 +141,18 @@ namespace Interface.ViewModels
             }
 
             // Step 3: Update performance panel counters metrics telemetry string
-            float frameTimeMs = deltaTime * 1000.0f;
-            float fps = deltaTime > 0 ? 1.0f / deltaTime : 0;
-            PerformanceMetrics = $"FPS: {fps:F0} | Native Step Latency: {frameTimeMs:F2} ms | Tracked Nodes: {activeSpheres}";
+            if (_frameWindowIndex == 0)
+            {
+                float fps_sum = 0;
+                for (int i = 0; i < _frameTimeWindow.Length; i++)
+                    fps_sum += _frameTimeWindow[i];
+
+                float averageDeltaTime = fps_sum / _frameTimeWindow.Length;
+
+                float frameTimeMs = averageDeltaTime * 1000.0f;
+                float fps = averageDeltaTime > 0 ? 1.0f / averageDeltaTime : 0;
+                PerformanceMetrics = $"FPS: {fps:F0} | Native Step Latency: {frameTimeMs:F2} ms | Tracked Nodes: {activeSpheres}";
+            }
         }
 
         #region Lifecycle Destructor Cleanups

@@ -4,10 +4,9 @@
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
+#include <random>
 
 PhysicsEngine::PhysicsEngine()
-    : m_spheres(nullptr)
-    , m_current_sphere_count(0)
 {
     m_config = { 
         .max_spheres = 0,
@@ -17,50 +16,38 @@ PhysicsEngine::PhysicsEngine()
     };
 }
 
-PhysicsEngine::~PhysicsEngine()
-{
-    if (m_spheres)
-    {
-        delete[] m_spheres;
-        m_spheres = nullptr;
-    }
-}
-
 void PhysicsEngine::Initialize(const SimulationConfig& config)
 {
-    // Clean up existing buffer if size changes or re-initializing
-    if (m_spheres)
-    {
-        delete[] m_spheres;
-        m_spheres = nullptr;
-    }
-
     m_config = config;
-    m_current_sphere_count = config.max_spheres;
 
     // Pre-allocate contiguous block for zero-copy window exposure
-    m_spheres = new SphereData[m_config.max_spheres];
+    m_spheres.resize(m_config.max_spheres);
 
     // Seed for deterministic generation
-    srand(42);
+    std::mt19937 rng(42);
 
-    float half_box = m_config.box_side_length / 2.0f;
+    float half_box = m_config.box_side_length * 0.5f;
+    float padding = m_config.sphere_radius * 1.5f;
 
-    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    // Randomize positions inside the bounding cube bounds
+    std::uniform_real_distribution<float> pos_dist(-half_box + padding, half_box - padding);
+
+    // Randomize velocities (-5.0 to +5.0 units/sec)
+    std::uniform_real_distribution<float> vel_dist(-5.0f, 5.0f);
+
+    int32_t index = 0;
+    for (SphereData& s : m_spheres)
     {
-        m_spheres[i].id = i;
-        m_spheres[i].radius = m_config.sphere_radius;
+        s.id = index++;
+        s.radius = m_config.sphere_radius;
 
-        // Randomize positions inside the bounding cube bounds
-        float padding = m_spheres[i].radius * 1.5f;
-        m_spheres[i].position.x = -half_box + padding + static_cast<float>(rand()) / (RAND_MAX / (m_config.box_side_length - 2 * padding));
-        m_spheres[i].position.y = -half_box + padding + static_cast<float>(rand()) / (RAND_MAX / (m_config.box_side_length - 2 * padding));
-        m_spheres[i].position.z = -half_box + padding + static_cast<float>(rand()) / (RAND_MAX / (m_config.box_side_length - 2 * padding));
+        s.position.x = pos_dist(rng);
+        s.position.y = pos_dist(rng);
+        s.position.z = pos_dist(rng);
 
-        // Randomize velocities (-5.0 to +5.0 units/sec)
-        m_spheres[i].velocity.x = -5.0f + static_cast<float>(rand()) / (RAND_MAX / 10.0f);
-        m_spheres[i].velocity.y = -5.0f + static_cast<float>(rand()) / (RAND_MAX / 10.0f);
-        m_spheres[i].velocity.z = -5.0f + static_cast<float>(rand()) / (RAND_MAX / 10.0f);
+        s.velocity.x = vel_dist(rng);
+        s.velocity.y = vel_dist(rng);
+        s.velocity.z = vel_dist(rng);
     }
 }
 
@@ -75,25 +62,25 @@ void PhysicsEngine::UpdateConfig(const SimulationConfig& config)
         m_config.time_scale = config.time_scale;
         m_config.box_side_length = config.box_side_length;
 
-        for (int32_t i = 0; i < m_current_sphere_count; ++i)
-            m_spheres[i].radius = config.sphere_radius;
+        for (SphereData& s : m_spheres)
+            s.radius = config.sphere_radius;
     }
 }
 
 void PhysicsEngine::Step(float delta_time)
 {
-    if (!m_spheres || (m_current_sphere_count <= 0))
+    if (m_spheres.empty())
         return;
 
     // Apply time scaling multiplier (0.5x - 2.0x)
     float dt = delta_time * m_config.time_scale;
 
     // Phase 1: Integrate positions
-    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    for (SphereData& s : m_spheres)
     {
-        m_spheres[i].position.x += m_spheres[i].velocity.x * dt;
-        m_spheres[i].position.y += m_spheres[i].velocity.y * dt;
-        m_spheres[i].position.z += m_spheres[i].velocity.z * dt;
+        s.position.x += s.velocity.x * dt;
+        s.position.y += s.velocity.y * dt;
+        s.position.z += s.velocity.z * dt;
     }
 
     // Phase 2: Resolve internal collisions & box boundary constraints
@@ -104,10 +91,8 @@ void PhysicsEngine::Step(float delta_time)
 void PhysicsEngine::ApplyBoundaryConstraints()
 {
     float half_box = m_config.box_side_length * 0.5f;
-    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    for (SphereData& s : m_spheres)
     {
-        SphereData& s = m_spheres[i];
-
         // X-axis check
         if ((s.position.x - s.radius) < -half_box)
         {
@@ -149,9 +134,9 @@ void PhysicsEngine::ApplyBoundaryConstraints()
 void PhysicsEngine::ResolveCollisions()
 {
     // O(N^2) naive check—perfect for showcasing baseline performance optimization constraints
-    for (int32_t i = 0; i < m_current_sphere_count; ++i)
+    for (size_t i = 0; i < m_spheres.size(); ++i)
     {
-        for (int32_t j = i + 1; j < m_current_sphere_count; ++j)
+        for (size_t j = i + 1; j < m_spheres.size(); ++j)
         {
             SphereData& s1 = m_spheres[i];
             SphereData& s2 = m_spheres[j];
@@ -160,11 +145,13 @@ void PhysicsEngine::ResolveCollisions()
             float dy = s2.position.y - s1.position.y;
             float dz = s2.position.z - s1.position.z;
 
-            float distance = std::sqrt((dx * dx) + (dy * dy) + (dz * dz));
+            float distance_squared = (dx * dx) + (dy * dy) + (dz * dz);
             float min_distance = s1.radius + s2.radius;
+			float min_distance_squared = min_distance * min_distance;
 
-            if ((distance < min_distance) && (distance > 0.0f))
+            if ((distance_squared < min_distance_squared) && (distance_squared > 0.0f))
             {
+				float distance = std::sqrt(distance_squared);
 				float inverse_distance = 1.0f / distance;
 
                 // Normal vector of contact
@@ -196,7 +183,7 @@ void PhysicsEngine::ResolveCollisions()
                     // Elastic impulse constant (1.0 = perfect elastic bounce)
                     float restitution = 1.0f;
                     float impulse_scalar = -(1.0f + restitution) * vel_along_normal;
-                    impulse_scalar /= 2.0f; // Assuming equal mass matrices
+                    impulse_scalar *= 0.5f; // Assuming equal mass matrices
 
                     // Apply impulse to each object
                     s1.velocity.x -= impulse_scalar * nx;
